@@ -53,12 +53,12 @@ class DocumentWorker:
     def __init__(self, embeddings):
         self.embeddings = embeddings
 
-    def process_docs(self, input_dir='**/*.docx', out_dir='snip') -> None | Chroma:
+    def process_docs(self, input_dir, pattern, out_dir='snip') -> None | Chroma:
         if check_if_collection_exists(out_dir):
             print('Collection exists, skipping...')
             return get_chroma(self.embeddings, out_dir)
 
-        documents = get_documents(input_dir)
+        documents = get_documents(pattern=pattern,dir_name=input_dir)
         texts = split_documents(documents)
 
         return save_documents(self.embeddings, out_dir, texts)

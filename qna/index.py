@@ -5,22 +5,18 @@ from langchain.embeddings import OpenAIEmbeddings
 from document_worker import DocumentWorker
 
 load_dotenv()
-
 embeddings = OpenAIEmbeddings()
-gpt4 = 'gpt-4-32k'
+gpt4 = 'gpt-4-1106-preview'
 gpt3 = 'gpt-3.5-turbo-16k'
 
-input_dir = './*.docx'
-out_dir = 'db/models'
+input_dir = 'docs'
+fileLoadsPattern = '*.docx'
+out_dir = 'db/snip'
 
 documentWorker = DocumentWorker(embeddings=embeddings)
-docsearch = documentWorker.process_docs(input_dir=input_dir, out_dir=out_dir)
+docsearch = documentWorker.process_docs(input_dir=input_dir, out_dir=out_dir, pattern=fileLoadsPattern)
 retriever = docsearch.as_retriever()
 
-docs = retriever.get_relevant_documents("How much money did Pando raise?")
-print(len(docs))
-
-print(retriever.search_type)
 
 qa = RetrievalQA.from_chain_type(
     llm=ChatOpenAI(temperature=1, max_tokens=14000, model=gpt3),
@@ -28,11 +24,27 @@ qa = RetrievalQA.from_chain_type(
     retriever=docsearch.as_retriever()
 )
 
+def askDb():
+    while True:
+        q = input("Enter your query or type 'exit' to quit: ")
+        docs = retriever.get_relevant_documents("q")
+        if q.lower() == 'exit':
+            break
 
-def query(q):
-    print("Query: ", q)
-    print("Answer: ", qa.run(q))
+        print("Query: ", q)
+        print("Answer: ")
+        for doc in docs:
+            print(doc.text) + '\n'
 
-query('на какой высоте ставить лампочку выход? ответ бери только в из документа')
 
-# query('Категория электроснабжения жилого дома 22 этажа')
+def query():
+    while True:
+        q = input("Enter your query or type 'exit' to quit: ")
+        if q.lower() == 'exit':
+            break
+        print("Query: ", q)
+        print("Answer: ", qa.run(q))
+
+# query()
+askDb()
+
