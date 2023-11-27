@@ -3,6 +3,7 @@ from langchain.chains import RetrievalQA
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 from document_worker import DocumentWorker
+from lib import askDb
 
 load_dotenv()
 embeddings = OpenAIEmbeddings()
@@ -15,36 +16,15 @@ out_dir = 'db/snip'
 
 documentWorker = DocumentWorker(embeddings=embeddings)
 docsearch = documentWorker.process_docs(input_dir=input_dir, out_dir=out_dir, pattern=fileLoadsPattern)
-retriever = docsearch.as_retriever()
+# retriever = docsearch.as_retriever()
 
 
-qa = RetrievalQA.from_chain_type(
-    llm=ChatOpenAI(temperature=1, max_tokens=14000, model=gpt3),
-    chain_type="stuff",
-    retriever=docsearch.as_retriever()
-)
+# qa = RetrievalQA.from_chain_type(
+#     llm=ChatOpenAI(temperature=1, max_tokens=14000, model=gpt3),
+#     chain_type="stuff",
+#     retriever=docsearch.as_retriever()
+# )
 
-def askDb():
-    while True:
-        q = input("Enter your query or type 'exit' to quit: ")
-        docs = retriever.get_relevant_documents("q")
-        if q.lower() == 'exit':
-            break
-
-        print("Query: ", q)
-        print("Answer: ")
-        for doc in docs:
-            print(doc.text) + '\n'
-
-
-def query():
-    while True:
-        q = input("Enter your query or type 'exit' to quit: ")
-        if q.lower() == 'exit':
-            break
-        print("Query: ", q)
-        print("Answer: ", qa.run(q))
 
 # query()
-askDb()
-
+askDb(docsearch)
